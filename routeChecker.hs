@@ -1,7 +1,6 @@
 import System.Environment
 import Text.Read (readMaybe)
 import Data.Maybe (mapMaybe)
-import Data.Char
 import Data.List
 
 main = do
@@ -25,7 +24,7 @@ readMaybeKorok :: String -> Maybe Korok
 readMaybeKorok [] = Nothing
 readMaybeKorok (c : num) = do
     r <- readMaybe [c]
-    n <- readMaybe num :: Maybe Int
+    n <- readMaybe num
     return $ Korok r n
 
 numInRegion :: Region -> Int
@@ -45,7 +44,7 @@ numInRegion r = case r of
     T -> 37
     W -> 68
     X -> 25
-    z -> 62
+    Z -> 62
 
 data Error = Missing Korok | Duplicate Korok Int | BadNum Korok
 data Response = Bad [Error] | Good
@@ -65,7 +64,7 @@ verify :: String -> Response
 verify route = case errors of
     [] -> Good
     _  -> Bad errors
-  where errors = duplicates ++ badNums ++ missings
+  where errors = badNums ++ duplicates ++ missings
         duplicates = map (\l@(x:_) -> Duplicate x (length l)) . filter (\l -> length l > 1) . group $ koroks
         badNums = map BadNum . filter (\(Korok r n) -> n > numInRegion r) $ koroks
         missings = map Missing $ allKoroks \\ koroks

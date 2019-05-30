@@ -11,14 +11,13 @@ main = do
 data Region = A | C | D | E | F | G | H | K | L | N | P | R | T | W | X | Z deriving (Eq, Ord, Show, Read, Enum, Bounded)
 data Korok = Korok Region Int deriving (Eq, Ord)
 
+instance Show Korok where
+    show (Korok r i) = show r ++ if i >= 10 then show i else "0" ++ show i
+
 allKoroks :: [Korok]
 allKoroks = do
     region <- [A .. Z]
-    number <- [1 .. numInRegion region]
-    return $ Korok region number
-
-instance Show Korok where
-    show (Korok r i) = show r ++ if i >= 10 then show i else "0" ++ show i
+    Korok region <$> [1 .. numInRegion region]
 
 readMaybeKorok :: String -> Maybe Korok
 readMaybeKorok [] = Nothing
@@ -68,4 +67,6 @@ verify route = case errors of
         duplicates = map (\l@(x:_) -> Duplicate x (length l)) . filter (\l -> length l > 1) . group $ koroks
         badNums = map BadNum . filter (\(Korok r n) -> n > numInRegion r) $ koroks
         missings = map Missing $ allKoroks \\ koroks
-        koroks = (sort . mapMaybe readMaybeKorok . words) route
+        koroks = (sort . mapMaybe readMaybeKorok . words') route
+        words' :: String -> [String]
+        words' s = [ filter (not . (`elem` "!?,.;:")) withPunc | withPunc <- words s ]
